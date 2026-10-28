@@ -8,7 +8,7 @@
 resource "aws_wafv2_web_acl" "main" {
   provider    = aws.us_east_1
   name        = "${var.project_name}-waf-${var.environment}"
-  description = "Reglas WAF para Touring Driver: Rate Limit (100 req/5min) y proteccion OWASP"
+  description = "Reglas WAF para Touring Driver Rate Limit 100 req por 5min y proteccion OWASP"
   scope       = "CLOUDFRONT"
 
   default_action {

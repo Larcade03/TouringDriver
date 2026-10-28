@@ -1,7 +1,7 @@
 variable "aws_region" {
   type        = string
   description = "Región de AWS para el despliegue de infraestructura"
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "project_name" {
@@ -13,7 +13,7 @@ variable "project_name" {
 variable "environment" {
   type        = string
   description = "Ambiente de despliegue (dev, staging, prod)"
-  default     = "prod"
+  default     = "dev"
 }
 
 variable "vpc_cidr" {
@@ -25,7 +25,7 @@ variable "vpc_cidr" {
 variable "availability_zones" {
   type        = list(string)
   description = "Zonas de disponibilidad para alta disponibilidad Multi-AZ (Az-a y Az-b)"
-  default     = ["us-east-1a", "us-east-1b"]
+  default     = []
 }
 
 variable "technical_team_email" {
