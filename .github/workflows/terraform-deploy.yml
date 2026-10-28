@@ -28,6 +28,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Debug OIDC Token and Variables
+        run: |
+          echo "=== Variables Configuradas ==="
+          echo "AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}"
+          echo "AWS_REGION: ${{ vars.AWS_REGION }}"
+          echo "TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}"
+          echo "=============================="
+          echo "Solicitando token OIDC para inspeccionar el 'sub' exacto..."
+          TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq -r '.value')
+          echo "=== Contenido Decodificado del Token OIDC ==="
+          echo "$TOKEN" | cut -d'.' -f2 | base64 -d 2>/dev/null | jq '{iss, aud, sub, repository, repository_owner, environment, ref}' || true
+          echo "============================================="
+
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
