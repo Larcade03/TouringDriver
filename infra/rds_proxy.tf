@@ -1,7 +1,7 @@
 # ============================================================
-# AMAZON RDS PROXY — Gestor y Pool de Conexiones a Base de Datos
-# Diagrama: Instancia de proxy de Amazon RDS (entre Lambdas y Amazon RDS)
-# Requerimientos: RNF-07 (150 usuarios normales), RNF-08 (200 usuarios pico) y RNF-11 (Base de datos protegida contra saturación)
+# AMAZON RDS PROXY — Pool de Conexiones de Base de Datos para Lambdas
+# Diagrama: Amazon RDS Proxy (conecta las 6 Lambdas con la BD)
+# Requerimiento: RNF-06 (Conexiones reutilizadas eficientemente sin saturar RDS)
 # ============================================================
 
 # Security Group para Amazon RDS Proxy
@@ -19,10 +19,11 @@ resource "aws_security_group" "rds_proxy_sg" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "Salida hacia la instancia RDS"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 
   tags = {
@@ -30,7 +31,7 @@ resource "aws_security_group" "rds_proxy_sg" {
   }
 }
 
-# Rol IAM para RDS Proxy
+# Rol de IAM para que RDS Proxy pueda leer credenciales de AWS Secrets Manager
 resource "aws_iam_role" "rds_proxy_role" {
   name = "${var.project_name}-rds-proxy-role"
 
@@ -46,18 +47,26 @@ resource "aws_iam_role" "rds_proxy_role" {
       }
     ]
   })
+
+  tags = {
+    Name = "${var.project_name}-rds-proxy-role"
+  }
 }
 
 resource "aws_iam_policy" "rds_proxy_policy" {
-  name = "${var.project_name}-rds-proxy-policy"
+  name        = "${var.project_name}-rds-proxy-policy"
+  description = "Permite a RDS Proxy obtener el secreto de la base de datos de Secrets Manager"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
-        Resource = [aws_secretsmanager_secret.db_credentials.arn]
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = aws_secretsmanager_secret.db_credentials.arn
       }
     ]
   })
@@ -85,6 +94,11 @@ resource "aws_db_proxy" "proxy" {
     iam_auth    = "DISABLED"
     secret_arn  = aws_secretsmanager_secret.db_credentials.arn
   }
+
+  depends_on = [
+    aws_db_instance.rds_multi_az,
+    aws_iam_role_policy_attachment.rds_proxy_attach
+  ]
 
   tags = {
     Name = "${var.project_name}-rds-proxy"
