@@ -2,9 +2,11 @@
 # AWS WAF — Firewall de Aplicaciones Web
 # Diagrama: AWS WAF (conectado a Amazon CloudFront)
 # Requerimiento: RNF-15 (Bloqueo de ataques y rate limit de 100 peticiones en 5 min)
+# Nota técnica AWS: WAF con scope CLOUDFRONT siempre requiere la región us-east-1
 # ============================================================
 
 resource "aws_wafv2_web_acl" "main" {
+  provider    = aws.us_east_1
   name        = "${var.project_name}-waf-${var.environment}"
   description = "Reglas WAF para Touring Driver: Rate Limit (100 req/5min) y proteccion OWASP"
   scope       = "CLOUDFRONT"

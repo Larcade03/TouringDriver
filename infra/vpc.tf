@@ -2,6 +2,15 @@
 # RED Y ALTA DISPONIBILIDAD MULTI-AZ (Zona Az-a y Zona Az-b)
 # ============================================================
 
+# Detección dinámica de zonas de disponibilidad en la región configurada
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+locals {
+  selected_azs = length(var.availability_zones) >= 2 ? var.availability_zones : slice(data.aws_availability_zones.available.names, 0, 2)
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -26,7 +35,7 @@ resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index + 1)
-  availability_zone       = var.availability_zones[count.index]
+  availability_zone       = local.selected_azs[count.index]
   map_public_ip_on_launch = true
 
   tags = {
@@ -40,7 +49,7 @@ resource "aws_subnet" "private_app" {
   count             = 2
   vpc_id            = aws_vpc.main.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + 10)
-  availability_zone = var.availability_zones[count.index]
+  availability_zone = local.selected_azs[count.index]
 
   tags = {
     Name = "${var.project_name}-private-app-subnet-az-${count.index == 0 ? "a" : "b"}"
@@ -53,7 +62,7 @@ resource "aws_subnet" "private_db" {
   count             = 2
   vpc_id            = aws_vpc.main.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + 20)
-  availability_zone = var.availability_zones[count.index]
+  availability_zone = local.selected_azs[count.index]
 
   tags = {
     Name = "${var.project_name}-private-db-subnet-az-${count.index == 0 ? "a" : "b"}"

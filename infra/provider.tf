@@ -29,3 +29,9 @@ provider "aws" {
     }
   }
 }
+
+# Proveedor alias en us-east-1 requerido por AWS para recursos WAFv2 asociados a CloudFront
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}

@@ -1,0 +1,5 @@
+# Configuración de ejemplo para backend remoto S3 local
+# Copiar este archivo a 'backend.hcl' (ignorado por Git) para pruebas locales
+bucket = "touring-driver-tfstate-lab09"
+key    = "lab09/dev/terraform.tfstate"
+region = "us-east-2"
