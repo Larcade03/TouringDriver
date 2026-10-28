@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  # Frontend web servido mediante Nginx
+  web:
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile
+    container_name: touring-driver-web
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - touring-network
+
+  # Backend REST API
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: touring-driver-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - JWT_SECRET=touring_super_secret_jwt_key_2026
+    restart: always
+    networks:
+      - touring-network
+
+networks:
+  touring-network:
+    driver: bridge
