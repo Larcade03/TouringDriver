@@ -1,0 +1,5 @@
+node_modules
+touring_driver.db
+touring_driver.db-shm
+touring_driver.db-wal
+.env
