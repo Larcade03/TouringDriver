@@ -1,0 +1,4 @@
+aws_region           = "us-east-1"
+project_name         = "touring-driver"
+environment          = "prod"
+technical_team_email = "alertas-iac@touringdriver.com"
